@@ -1,8 +1,8 @@
 ---
-title: "ARBEITSTITEL Ressourcenverbrauch Messen"
+title: "ARBEITSTITEL Wie misst man den Energieverbrauch von Microservices?"
 date: 2024-07-11T14:18:38+02:00
 lsatmod: 2024-07-11T14:18:38+02:00
-author: "[Florian Wende](https://www.linkedin.com/in/fwende/)"
+author: "[Sascha Böhme](https://www.linkedin.com/in/sascha-b%C3%B6hme-24b1782b6/) und [Florian Wende](https://www.linkedin.com/in/fwende/)"
 type: "post"
 image: "TODO"
 tags: [ "Green Software Engineering", "Emissionen", "Ressourcenverbrauch", "Messen", "Tools" ]
@@ -20,6 +20,11 @@ Emissionen durch die Herstellung der benötigten Hardware sowie über den Nutzun
 Verbesserungen wird der Großteil der weltweit in der IT verbrauchten Energie aktuell noch immer aus fossilen
 Energieträgern gedeckt. Daher korrelieren hier Emissionen und Energieverbrauch, und eine Reduzierung des
 Energieverbrauchs führt zu niedrigeren Emissionen.
+
+Um die Wirksamkeit von Maßnahmen zur Reduzierung des Energieverbrauchs von Software zu überprüfen, ist es notwendig,
+verlässliche Messwerkzeuge an der Hand zu haben, die im besten Fall auch noch angenehm zu bedienen sind. Erst durch
+die Messung und den Vergleich verschiedener Referenzimplementierungen der gleichen funktionalen Logik, sind wir in der
+Lage, wissenschaftlich fundierte Empfehlungen zur Reduktion von Software verursachten Emissionen zu geben.
 
 ## Energieverbrauch von Microservices messen
 
@@ -51,27 +56,16 @@ unterschiedliche Ansätze mit ihren eigenen Stärken und Schwächen.
 GreenFrame [Gfm] ist ein Open-Source-Messwerkzeug zur Bestimmung des Energieverbrauchs von Webseiten. Es bietet
 allerdings auch die Möglichkeit, den Energieverbrauch von containerisierten Anwendungen wie zum Beispiel Microservices
 zu messen. Das Kernmodell von GreenFrame haben wir zu einer Konsolenapplikation namens LiMo, als Abkürzung für „Lineares
-Modell“, kondensiert [Git]. Die Motivation für die Namenswahl liefert das Vorgehen von Green- Frame, das CPU- und
+Modell“, kondensiert [Git]. Die Motivation für die Namenswahl liefert das Vorgehen von GreenFrame, das CPU- und
 Speicherverbrauch der Container misst und beide Zahlen mit konstanten, empirischen Werten normalisiert und zu einem
 Energieverbrauch aggregiert. Dieser Wert gibt den Verbrauch für ein exemplarisches System wieder und kann nicht als
 absolute Kenngröße genutzt werden. Für Gegenüberstellungen ist der Wert allerdings sehr wohl hilfreich.
-Der Vergleich der Implementierungen des Beispiel-Microservice nutzt das in Abbildung 4 dargestellte Set-up. Die
-jeweilige Microservice-Version wird lokal auf einem Entwickler-Notebook in Docker- Compose ausgeführt und via k6 unter
-Last gesetzt. Parallel läuft LiMo und misst den Energieverbrauch. Als Testzeitraum reichen drei Minuten, da innerhalb
-dieser Zeit sowohl CPU- als auch Speicherverbrauch weitgehend konstant bleiben. Java-basierte Implementierungen erhalten
-eine Minute Vorwärmzeit unter Last, damit JIT-Kompilierungen (Just-in-time) die eigentlichen Messungen nicht verzerren.
-Dieses Vorgehen ist fair, da bei längerer Laufzeit eines Microservice die initiale JIT-Zeit nicht ins Gewicht fällt.
 
-Die Messungen erfolgen unter fünf unterschiedlich hohen Lastszenarien, bei denen die drei Endpunkte in jeweils gleicher
-Verteilung aufgerufen werden [Git]. Abbildung 5 gibt die Messergebnisse von LiMo wieder. Es zeigt sich bei allen
-Implementierungen eine nahezu lineare Korrelation zwischen Aufrufrate und Energieverbrauch. Das bedeutet, dass andere
-Aspekte der Implementierungen nur einen geringen Einfluss auf den Energieverbrauch haben und bei zunehmender Last in den
-Hintergrund treten. Zudem sind deutliche Unterschiede zwischen den Implementierungen erkennbar. Rust verbraucht deutlich
-weniger Energie als alle anderen Technologien. Insbesondere können mit Rust, bei gleichem Energieverbrauch, fünfmal so
-viele Requests wie mit Go als zweitbester Technologie verarbeitet werden. Die Java-Implementierungen liegen im
-Mittelfeld und sind zum Teil vergleichbar effizient wie Go. Hierfür ist vermutlich die Reife des Garbage Collector (GC)
-von Java im Gegensatz zum GC von Go verantwortlich. Der Einsatz von nativem Kompilieren für Java zeigt bei den Messungen
-keinen Vorteil und ist zusammen mit Node am Energie-hungrigsten.
+Als Konsolenapplikation sind LiMo bzw. GreenFrame dafür ausgelegt, lokal auf dem Entwickler-Notebook ausgeführt zu
+werden, für kontinuierliche Messungen könnte man sie aber auch in eine CI-Pipeline integrieren. Die zu messende
+Anwendung wird dann typischerweise lokal als Container in Docker (oder gemeinsam mit eventuell benötigten
+Backend-Services in Docker-Compose) ausgeführt und von einem ebenfalls lokal betriebenen Lastgenerator unter Last
+gesetzt. Parallel läuft LiMo und misst den Energieverbrauch.
 
 ## Hardwarenahes Messen – Green Metrics Tool
 
@@ -88,39 +82,24 @@ Wir haben das Green Metrics Tool in einer Public-Cloud-Umgebung eingesetzt (vgl.
 Microservice zusammen mit dem Green Metrics Tool in einer Instanz. Alle anderen Komponenten liefen auf separaten
 Instanzen, um die Messung nicht zu beeinflussen.
 
-Der gemessene Energieverbrauch der verschiedenen Implementierungen ist in Abbildung 7 dargestellt. Für Spring brach das
-Szenario unter hoher Last wiederholt ab, sodass nur Werte für geringe bis mittlere Last vorliegen. Die vom Green Metrics
-Tool gemessenen Zahlen ähneln denen von LiMo. Insbesondere zeigt sich Rust als klar effizienteste Implementierung. Go
-und Java, sowohl mit Spring als auch mit Quarkus, liegen im Mittelfeld. Node und die native Java-Implementierung folgen
-dahinter.
-
 ## Messen im Kubernetes-Cluster – Kepler
 
 Kepler [Kep] ist ein Open-Source-Messwerkzeug zur Protokollierung des Energieverbrauchs von Nodes und Pods in einem
 Kubernetes-Cluster. Während der Laufzeit von Microservices sammelt es kontinuierlich Verbrauchsdaten von verschiedenen
 Sensoren, insbesondere von Performance-Sensoren im Linux-Kernel. Aus diesen Daten aggregiert Kepler Übersichten, wobei
 ein lineares Modell ähnlich dem in LiMo zum Einsatz kommt. Optional kann ein Machine-Learning-Modell aktiviert werden,
-was wir in unseren Tests allerdings nicht benutzt haben.
+was wir allerdings bisher nicht getestet haben.
 
 Wie beim Green Metrics Tool haben wir Kepler in einer Public-Cloud-Umgebung eingesetzt (vgl. Abbildung 8). Genau wie bei
 den anderen Set-ups lief der Microservice ohne Replikation in einer Instanz. Sowohl Backend als auch Kepler liefen
 ebenso im Cluster, während wir die Lasttests von einem Entwickler-Notebook ausgeführt haben.
 
-Abbildung 9 zeigt die von Kepler gemessenen Werte für die Microservice-Implementierungen. Im Gegensatz zu den Messungen
-mit den beiden anderen Werkzeugen zeigen sich hier deutliche Schwankungen statt einem klaren linearen Verhalten. Die
-Tests liefen nur jeweils drei Minuten, wie auch bei den anderen beiden Werkzeugen. Längere Laufzeiten könnten eine
-Glättung der Ergebnisse bewirken. Node fiel unter hoher Last wiederholt aus, sodass dafür keine Messwerte vorliegen.
-Unter geringer bis mittlerer Last schlägt sich Node allerdings vergleichbar gut wie Rust, das erneut als sparsamste
-Implementierung auffällt. Für Go und die verschiedenen Java- Implementierungen ist unter Ausblenden der Schwankungen
-kein signifikanter Unterschied erkennbar. Hier ist allerdings die native Version von Java vergleichbar mit den
-JVM-Versionen.
-
 ## Vergleich der Messwerkzeuge
 
-Die Messungen mit Kepler im Vergleich mit den anderen beiden Werkzeugen zeigen, dass unterschiedliche Messansätze zu
-durchaus unterschiedlichen Ergebnissen führen können. Die betrachteten Messwerkzeuge unterscheiden sich in ihren
-Ansätzen. LiMo und das Green Metrics Tool sind vorrangig für Benchmarks gedacht, während Kepler kontinuierliche
-Messungen, selbst in produktiven Umgebungen, erlaubt, woraus man Trends ablesen kann.
+Die betrachteten Messwerkzeuge unterscheiden sich in ihren Ansätzen. LiMo und das Green Metrics Tool sind vorrangig für
+Benchmarks gedacht, während Kepler kontinuierliche Messungen, selbst in produktiven Umgebungen, erlaubt, woraus man
+Trends ablesen kann. Dass diese verschiedenen Messansätze durchaus zu unterschiedlichen Ergebnissen führen können,
+zeigen wir in unserem Artikel [HIER TITEL EINFÜGEN](HIER LINK DAZU EINFÜGEN).
 
 Unserer Erfahrung nach lassen sich alle drei Werkzeuge leicht aufsetzen, wobei LiMo aufgrund seiner Einfachheit einen
 Vorteil aufweist. Im Betrieb wirkt Kepler unausgereift, weil wir häufige Aussetzer und Fehler beobachtet haben. LiMo und
