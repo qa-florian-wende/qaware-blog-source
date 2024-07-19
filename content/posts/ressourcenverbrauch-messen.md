@@ -1,20 +1,20 @@
 ---
 title: "ARBEITSTITEL Wie misst man den Energieverbrauch von Microservices?"
 date: 2024-07-11T14:18:38+02:00
-lsatmod: 2024-07-11T14:18:38+02:00
-author: "[Sascha Böhme](https://www.linkedin.com/in/sascha-b%C3%B6hme-24b1782b6/) und [Florian Wende](https://www.linkedin.com/in/fwende/)"
+lastmod: 2024-07-11T14:18:38+02:00
+author: "[Sascha Böhme](https://www.linkedin.com/in/sascha-b%C3%B6hme-24b1782b6/), [Andreas Weber](https://www.linkedin.com/in/andreas-weber-green/) und [Florian Wende](https://www.linkedin.com/in/fwende/)"
 type: "post"
-image: "TODO"
+image: "ressourcenverbrauch-messen.webp"
 tags: [ "Green Software Engineering", "Emissionen", "Ressourcenverbrauch", "Messen", "Tools" ]
 draft: true
-summary: "TODO"
+summary: "Der Artikel stellt drei Messwerkzeuge (LiMo, Green Metrics Tool und Kepler) für den Energieverbrauch von Software vor und vergleicht diese."
 ---
 
 Im Zuge der Digitalisierung wächst der Energieverbrauch und damit der ökologische Fußabdruck von Software
 stetig. Das gilt insbesondere für die in Clouds laufenden Microservices. Mit geeigneten Werkzeugen, von denen wir
 drei vorstellen und vergleichen, kann dieser Fußabdruck gemessen werden.
 
-Der Anteil der IT an den globalen Emissionen liegt geschätzt zwischen 2 und 4 Prozent [Frei21] und damit auf einem
+Der Anteil der IT an den globalen Emissionen liegt geschätzt zwischen 2 und 4 Prozent[^1] und damit auf einem
 ähnlichen Niveau wie das Flugwesen, das gemeinhin als großer Erzeuger von Emissionen gilt. In der IT entstehen
 Emissionen durch die Herstellung der benötigten Hardware sowie über den Nutzungszeitraum der Hardware. Trotz stetiger
 Verbesserungen wird der Großteil der weltweit in der IT verbrauchten Energie aktuell noch immer aus fossilen
@@ -53,12 +53,14 @@ unterschiedliche Ansätze mit ihren eigenen Stärken und Schwächen.
 
 ## Messen mit einem linearen Modell – LiMo
 
-GreenFrame [Gfm] ist ein Open-Source-Messwerkzeug zur Bestimmung des Energieverbrauchs von Webseiten. Es bietet
+[GreenFrame](https://github.com/marmelab/greenframe-cli/blob/main/src/model/README.md) ist ein Open-Source-Messwerkzeug
+zur Bestimmung des Energieverbrauchs von Webseiten. Es bietet
 allerdings auch die Möglichkeit, den Energieverbrauch von containerisierten Anwendungen wie zum Beispiel Microservices
-zu messen. Das Kernmodell von GreenFrame haben wir zu einer Konsolenapplikation namens LiMo, als Abkürzung für „Lineares
-Modell“, kondensiert [Git]. Die Motivation für die Namenswahl liefert das Vorgehen von GreenFrame, das CPU- und
-Speicherverbrauch der Container misst und beide Zahlen mit konstanten, empirischen Werten normalisiert und zu einem
-Energieverbrauch aggregiert. Dieser Wert gibt den Verbrauch für ein exemplarisches System wieder und kann nicht als
+zu messen. Das Kernmodell von GreenFrame haben wir zu einer Konsolenapplikation
+namens [LiMo](https://github.com/qaware/microservice-energy-consumption-benchmark), als Abkürzung für „Lineares Modell“,
+kondensiert. Die Motivation für die Namenswahl liefert das Vorgehen von GreenFrame, das CPU- und Speicherverbrauch der
+Container misst und beide Zahlen mit konstanten, empirischen Werten normalisiert und zu einem Energieverbrauch
+aggregiert. Dieser Wert gibt den Verbrauch für ein exemplarisches System wieder und kann nicht als
 absolute Kenngröße genutzt werden. Für Gegenüberstellungen ist der Wert allerdings sehr wohl hilfreich.
 
 Als Konsolenapplikation sind LiMo bzw. GreenFrame dafür ausgelegt, lokal auf dem Entwickler-Notebook ausgeführt zu
@@ -69,7 +71,8 @@ gesetzt. Parallel läuft LiMo und misst den Energieverbrauch.
 
 ## Hardwarenahes Messen – Green Metrics Tool
 
-Das Green Metrics Tool [Gmt] ist ein Open-Source-Messwerkzeug zur Erfassung des Energieverbrauchs containerisierter
+Das [Green Metrics Tool](https://www.green-coding.io/de/projects/green-metrics-tool/) ist ein Open-Source-Messwerkzeug
+zur Erfassung des Energieverbrauchs containerisierter
 Anwendungen. Es benutzt eine detaillierte Ausführungssteuerung, bei der neben Lastzeiten auch Ruhezeiten berücksichtigt
 werden. Dabei werden Kenngrößen aus vielen verschiedenen Sensoren, je nach Laufzeitumgebung, gemessen. Für
 virtualisierte Umgebungen steht unter anderem ein Sensor zur Verfügung, der mithilfe eines Machine-Learning-Modells den
@@ -84,7 +87,8 @@ Instanzen, um die Messung nicht zu beeinflussen.
 
 ## Messen im Kubernetes-Cluster – Kepler
 
-Kepler [Kep] ist ein Open-Source-Messwerkzeug zur Protokollierung des Energieverbrauchs von Nodes und Pods in einem
+[Kepler](https://sustainable-computing.io/) ist ein Open-Source-Messwerkzeug zur Protokollierung des Energieverbrauchs
+von Nodes und Pods in einem
 Kubernetes-Cluster. Während der Laufzeit von Microservices sammelt es kontinuierlich Verbrauchsdaten von verschiedenen
 Sensoren, insbesondere von Performance-Sensoren im Linux-Kernel. Aus diesen Daten aggregiert Kepler Übersichten, wobei
 ein lineares Modell ähnlich dem in LiMo zum Einsatz kommt. Optional kann ein Machine-Learning-Modell aktiviert werden,
@@ -99,7 +103,10 @@ ebenso im Cluster, während wir die Lasttests von einem Entwickler-Notebook ausg
 Die betrachteten Messwerkzeuge unterscheiden sich in ihren Ansätzen. LiMo und das Green Metrics Tool sind vorrangig für
 Benchmarks gedacht, während Kepler kontinuierliche Messungen, selbst in produktiven Umgebungen, erlaubt, woraus man
 Trends ablesen kann. Dass diese verschiedenen Messansätze durchaus zu unterschiedlichen Ergebnissen führen können,
-zeigen wir in unserem Artikel [HIER TITEL EINFÜGEN](HIER LINK DAZU EINFÜGEN).
+zeigen wir in unserem Artikel [_The Fast and the Frugal: Microservices at
+Race_](https://blog.qaware.de/posts/the-fast-and-the-frugal-microservices-at-race/).
+
+[//]: # (TODO: Fertigen Titel und Link einfügen)
 
 Unserer Erfahrung nach lassen sich alle drei Werkzeuge leicht aufsetzen, wobei LiMo aufgrund seiner Einfachheit einen
 Vorteil aufweist. Im Betrieb wirkt Kepler unausgereift, weil wir häufige Aussetzer und Fehler beobachtet haben. LiMo und
@@ -110,3 +117,6 @@ gegenüber LiMo in Bezug auf Benutzerfreundlichkeit.
 Wir halten LiMo für ein gutes Werkzeug für initiale, einfache Messungen und Vergleiche. Das Green Metrics Tool wirkt
 insgesamt vertrauenswürdiger und erlaubt zudem Analysen vom Zusammenspiel mehrerer Microservices. Von Kepler raten wir
 gegenwärtig eher ab aufgrund der regelmäßig auftretenden Probleme.
+
+[^1]: C. Freitag et al., The real climate and transformative impact of ICT: A critique of estimates, trends, and
+regulations, Cell Press, 2021
